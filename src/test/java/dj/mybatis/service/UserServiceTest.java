@@ -31,6 +31,7 @@ public class UserServiceTest {
     public void getData() {
         PowerMockito.mockStatic(UserService.class);
         when(UserService.getData(12)).thenReturn(156);
+        //测试提交
 
         TestCase.assertEquals(156, UserService.getData(12));
     }
