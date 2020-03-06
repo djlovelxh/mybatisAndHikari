@@ -11,6 +11,7 @@ public class DynamicDataSource extends AbstractRoutingDataSource {
     protected Object determineCurrentLookupKey() {
         DataSourceType.DataBaseType dataBaseType = DataSourceType.getDataBaseType();
         return dataBaseType;
+
     }
 
 }
