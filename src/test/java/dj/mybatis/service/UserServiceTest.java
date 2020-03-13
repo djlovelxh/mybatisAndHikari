@@ -10,6 +10,9 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 import static org.powermock.api.mockito.PowerMockito.when;
 
 @PrepareForTest(UserService.class)
@@ -39,6 +42,11 @@ public class UserServiceTest {
     @Test
     public void helloMethod() throws Exception {
         /*静态方法时候需要反射类*/
+        String name=this.getClass().getName();
+        Class d=Class.forName("dj.mybatis.service.impl.PersonServiceImpl");
+        Field[] fields = d.getDeclaredFields();
+        Method[] methods = d.getDeclaredMethods();
+
         PowerMockito.mockStatic(UserService.class);
         when(UserService.helloMethod()).thenReturn("I am a static mock method.");
         TestCase.assertEquals("I am a static mock method.", UserService.helloMethod());

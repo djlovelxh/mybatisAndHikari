@@ -3,7 +3,12 @@ package dj.mybatis.service.impl;
 import dj.mybatis.entity.Person;
 import dj.mybatis.dao.PersonDao;
 import dj.mybatis.service.PersonService;
+import org.springframework.aop.framework.AopContext;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -14,7 +19,9 @@ import java.util.List;
  * @author makejava
  * @since 2020-03-04 14:21:47
  */
-@Service("personService")
+//@Service("personService")
+@Service
+@Transactional(propagation=Propagation.NESTED,isolation= Isolation.DEFAULT,readOnly = false,rollbackFor=Exception.class)
 public class PersonServiceImpl implements PersonService {
     @Resource
     private PersonDao personDao;
@@ -26,6 +33,7 @@ public class PersonServiceImpl implements PersonService {
      * @return 实例对象
      */
     @Override
+    @Transactional(readOnly = true) //查询设置为只读事务：这样不加锁
     public Person queryById(Integer id) {
         return this.personDao.queryById(id);
     }
@@ -38,6 +46,7 @@ public class PersonServiceImpl implements PersonService {
      * @return 对象列表
      */
     @Override
+    @Transactional(readOnly = true) //查询设置为只读事务：这样不加锁
     public List<Person> queryAllByLimit(int offset, int limit) {
         return this.personDao.queryAllByLimit(offset, limit);
     }
@@ -49,8 +58,12 @@ public class PersonServiceImpl implements PersonService {
      * @return 实例对象
      */
     @Override
+    @Transactional
     public Person insert(Person person) {
         this.personDao.insert(person);
+        person.setName("433");
+//        int i = 1/0;  // 抛出异常
+        personDao.update(person);
         return person;
     }
 
@@ -62,8 +75,13 @@ public class PersonServiceImpl implements PersonService {
      */
     @Override
     public Person update(Person person) {
-        this.personDao.update(person);
-        return this.queryById(person.getId());
+//        PersonService personService = (PersonService) AopContext.currentProxy();
+        personDao.update(person);
+        person.setName("433336666666666666666666565");
+//        personService.update(person);
+        personDao.update(person);
+//        return this.queryById(person.getId());
+        return this.queryById(1);
     }
 
     /**
@@ -73,6 +91,7 @@ public class PersonServiceImpl implements PersonService {
      * @return 是否成功
      */
     @Override
+//    @Async
     public boolean deleteById(Integer id) {
         return this.personDao.deleteById(id) > 0;
     }

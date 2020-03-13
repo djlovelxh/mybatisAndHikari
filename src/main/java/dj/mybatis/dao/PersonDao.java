@@ -2,7 +2,10 @@ package dj.mybatis.dao;
 
 import dj.mybatis.comfig.DataSource;
 import dj.mybatis.entity.Person;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 
 /**
@@ -11,6 +14,8 @@ import java.util.List;
  * @author makejava
  * @since 2020-03-04 14:21:47
  */
+@Component
+@Mapper
 public interface PersonDao {
 
     /**

@@ -43,9 +43,10 @@
     </select>
 
     <!--新增所有列-->
-    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into mybatis.person(name, sex)
-        values (#{name}, #{sex})
+<!--    <insert id="insert" keyProperty="id" useGeneratedKeys="true">-->
+    <insert id="insert" >
+        insert into mybatis.person(id,name, sex)
+        values (#{id},#{name}, #{sex})
     </insert>
 
     <!--通过主键修改数据-->
