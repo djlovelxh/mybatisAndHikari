@@ -8,15 +8,12 @@ import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.jta.atomikos.AtomikosDataSourceBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
@@ -24,31 +21,13 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Created by dj on 2020/2/23.
+ * @author dj on 2020/2/23.
  */
 @Configuration
-@MapperScan(basePackages = "dj.mybatis.dao", sqlSessionFactoryRef = "sqlSessionFactory") //basePackages 我们接口文件的地址
+@MapperScan(basePackages = "dj.mybatis.dao", sqlSessionFactoryRef = "sqlSessionFactory")
+@Lazy
 public class DynamicDataSourceConfig {
 
-    // 将这个对象放入Spring容器中
- /*   @Bean(name = "primaryDataSource")
-    // 表示这个数据源是默认数据源
-    @Primary
-    // 读取application.properties中的配置参数映射成为一个对象
-    // prefix表示参数的前缀
-    @ConfigurationProperties(prefix = "spring.datasource.primary")
-    public DataSource getDateSource1() {
-        //使用druidPool
-//        return DataSourceBuilder.create().build();
-        return DruidDataSourceBuilder.create().build();
-    }
-    @Bean(name = "secondaryDataSource")
-    @ConfigurationProperties(prefix = "spring.datasource.secondary")
-    public DataSource getDateSource2() {
-        //使用druidPool
-//        return DataSourceBuilder.create().build();
-        return DruidDataSourceBuilder.create().build();
-    }*/
     /**
      * 数据源1配置   使用AtomikosDataSourceBean 支持多数据源事务
      *
@@ -56,8 +35,6 @@ public class DynamicDataSourceConfig {
      * @return Primary 指定主库  （必须指定一个主库 否则会报错）
      */
     @Bean(name = "primaryDataSource")
-//    @Primary
-    @Autowired
     public AtomikosDataSourceBean oneDataSource(Environment env) {
         AtomikosDataSourceBean ds = new AtomikosDataSourceBean();
         Properties prop = build(env, "spring.datasource.druid.primary.");
@@ -74,7 +51,6 @@ public class DynamicDataSourceConfig {
      * @param env
      * @return
      */
-    @Autowired
     @Bean(name = "secondaryDataSource")
     public AtomikosDataSourceBean twoDataSource(Environment env) {
         AtomikosDataSourceBean ds = new AtomikosDataSourceBean();
@@ -91,12 +67,14 @@ public class DynamicDataSourceConfig {
     public DynamicDataSource dataSource(@Qualifier("primaryDataSource") DataSource primaryDataSource,
                                         @Qualifier("secondaryDataSource") DataSource secondaryDataSource) {
         //这个地方是比较核心的targetDataSource 集合是我们数据库和名字之间的映射
-        Map<Object, Object> targetDataSource = new HashMap<>();
+        Map<Object, Object> targetDataSource = new HashMap<>(4);
         targetDataSource.put(DataSourceType.DataBaseType.primary, primaryDataSource);
         targetDataSource.put(DataSourceType.DataBaseType.secondary, secondaryDataSource);
         DynamicDataSource dataSource = new DynamicDataSource();
         dataSource.setTargetDataSources(targetDataSource);
-        dataSource.setDefaultTargetDataSource(primaryDataSource);//设置默认对象
+
+        //设置默认对象
+        dataSource.setDefaultTargetDataSource(primaryDataSource);
         return dataSource;
     }
 
@@ -105,8 +83,9 @@ public class DynamicDataSourceConfig {
             throws Exception {
         SqlSessionFactoryBean bean = new SqlSessionFactoryBean();
         bean.setDataSource(dynamicDataSource);
+        //设置我们的xml文件路径
         bean.setMapperLocations(new PathMatchingResourcePatternResolver()
-                .getResources("classpath*:config/mapper/*.xml"));//设置我们的xml文件路径
+                .getResources("classpath*:config/mapper/*.xml"));
         return bean.getObject();
     }
 

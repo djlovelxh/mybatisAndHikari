@@ -62,7 +62,7 @@ public class PersonServiceImpl implements PersonService {
     public Person insert(Person person) {
         this.personDao.insert(person);
         person.setName("433");
-//        int i = 1/0;  // 抛出异常
+        int i = 1/0;  // 抛出异常
         personDao.update(person);
         return person;
     }
